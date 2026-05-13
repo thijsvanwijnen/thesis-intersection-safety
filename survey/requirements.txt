@@ -1,0 +1,4 @@
+# Runtime dependencies for the PixelSurvey Dash app.
+# Dev tools (Jupyter, IPython) are intentionally excluded — install those locally as needed.
+dash==3.0.4
+dash-bootstrap-components==2.0.2

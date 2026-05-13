@@ -1,0 +1,24 @@
+/* Layout for the two-alternative comparison in act1.
+   The RadioItems (id="stated-choice-1-response") contains two form-check items.
+   We use flexbox so both alternatives always sit side by side and scale with the viewport. */
+
+#stated-choice-1-response {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    justify-content: center;
+    gap: 2%;
+    width: 100%;
+}
+
+/* Each alternative takes up ~48% of the container width, so both fit side by side.
+   min-width prevents the cards from becoming unreadably narrow on very small screens. */
+#stated-choice-1-response .form-check {
+    flex: 1 1 48%;
+    min-width: 280px;
+    max-width: 48%;
+}
+
+/* The label wraps the card — make it fill the full width of its form-check container. */
+#stated-choice-1-response .form-check-label {
+    width: 100%;
+}
