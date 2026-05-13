@@ -1,0 +1,7 @@
+# Ruwe surveydata — bevat respondent-IDs, niet in versiebeheer
+data/raw/
+
+# Python cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
