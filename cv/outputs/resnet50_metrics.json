@@ -1,0 +1,30 @@
+{
+  "backbone": "resnet50",
+  "n_train": 63,
+  "n_val": 16,
+  "best_epoch": 73,
+  "best_val_mse": 0.05524248257279396,
+  "mae": 0.18885216861963272,
+  "rmse": 0.2350371928463988,
+  "r2": -0.008029414282736846,
+  "spearman_r": 0.3911764705882353,
+  "spearman_p": 0.1340712861972552,
+  "null_mae": 0.17520421344316506,
+  "null_rmse": 0.23471801749531987,
+  "train_mean_score": 0.6657420327608485,
+  "experiment_flags": {
+    "use_originals_only": true,
+    "normalize_features": true,
+    "head_type": "linear",
+    "weight_decay": 0.01
+  },
+  "hyperparameters": {
+    "feature_dim": 2048,
+    "hidden_dim": 128,
+    "dropout": 0.3,
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "max_epochs": 200,
+    "patience": 20
+  }
+}

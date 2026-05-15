@@ -1,0 +1,39 @@
+{
+  "backbone": "dinov2_vits14",
+  "n_train": 63,
+  "n_val": 16,
+  "best_epoch": 200,
+  "best_val_mse": 0.05869591236114502,
+  "mae": 0.19244152307510376,
+  "rmse": 0.24227239191532135,
+  "r2": -0.0710453987121582,
+  "spearman_r": -0.014705882352941175,
+  "spearman_p": 0.956891924031642,
+  "null_mae": 0.17520420253276825,
+  "null_rmse": 0.23471802473068237,
+  "train_mean_score": 0.6657420327608485,
+  "finetuned": {
+    "run": false,
+    "mae": null,
+    "rmse": null,
+    "r2": null,
+    "spearman_r": null
+  },
+  "experiment_flags": {
+    "use_originals_only": true,
+    "normalize_features": true,
+    "head_type": "linear",
+    "weight_decay": 0.01,
+    "image_size": 518,
+    "finetune_backbone": false
+  },
+  "hyperparameters": {
+    "feature_dim": 384,
+    "hidden_dim": 128,
+    "dropout": 0.3,
+    "learning_rate": 0.001,
+    "batch_size": 32,
+    "max_epochs": 200,
+    "patience": 20
+  }
+}

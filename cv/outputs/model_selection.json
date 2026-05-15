@@ -1,0 +1,17 @@
+{
+  "selected_backbone": "resnet50",
+  "checkpoint": "resnet50_best.pt",
+  "feature_dim": 2048,
+  "features_dir": "features/resnet50",
+  "selection_reason": "ResNet-50 selected over DINOv2-Small on preliminary data (N=63 train). ResNet-50 achieves Spearman rho=0.391 vs DINOv2 rho=-0.015; rank ordering is the primary criterion for BT-derived labels. Selection to be revisited with full survey labels (~145 intersections).",
+  "metrics": {
+    "mae": 0.18885216861963272,
+    "rmse": 0.2350371928463988,
+    "r2": -0.008029414282736846,
+    "spearman_r": 0.3911764705882353,
+    "null_mae": 0.17520421344316506
+  },
+  "n_train": 63,
+  "n_val": 16,
+  "data_note": "Preliminary \u2014 based on pilot survey BT scores, not full survey data."
+}
