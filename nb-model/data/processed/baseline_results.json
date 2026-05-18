@@ -1,0 +1,72 @@
+{
+  "selected_vars": [
+    "dim_type_4p",
+    "intensity_major",
+    "dim_priority_VRI",
+    "dim_priority_voorrang"
+  ],
+  "excluded_vars": [
+    "n_legs",
+    "speed_limit",
+    "intensity_minor"
+  ],
+  "n_obs": 22,
+  "model": "NB2 (negative binomial type 2, loglike_method=nb2)",
+  "offset": "log(exposure)",
+  "aic_poisson": 61.89204888133582,
+  "aic_nb": 80.83892108766617,
+  "delta_aic_poisson_minus_nb": -18.946872206330347,
+  "alpha_nb": null,
+  "overdispersion_ct_pval": 2.204510620735823e-14,
+  "coefficients": {
+    "const": {
+      "coef": -12.144844129473668,
+      "se": NaN,
+      "irr": 5.3157091570485755e-06,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "p": NaN
+    },
+    "dim_type_4p": {
+      "coef": 0.15484334625424026,
+      "se": NaN,
+      "irr": 1.167475057438398,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "p": NaN
+    },
+    "intensity_major": {
+      "coef": 5.904525556487219e-05,
+      "se": NaN,
+      "irr": 1.0000590469987702,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "p": NaN
+    },
+    "dim_priority_VRI": {
+      "coef": -0.16968871397215488,
+      "se": NaN,
+      "irr": 0.8439274785453511,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "p": NaN
+    },
+    "dim_priority_voorrang": {
+      "coef": -0.25277375118241685,
+      "se": NaN,
+      "irr": 0.7766435766385144,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "p": NaN
+    },
+    "alpha": {
+      "coef": 1.0512710963760241,
+      "se": NaN,
+      "irr": 2.861285777555157,
+      "ci_low": NaN,
+      "ci_high": NaN,
+      "p": NaN
+    }
+  },
+  "note": "Preliminary pilot data (n=22). All results subject to revision with full survey data."
+}

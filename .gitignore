@@ -46,5 +46,8 @@ intersections/output/
 intersections/cache/
 intersections/notebooks/cache/
 
+# ── cv: cached feature tensors (large, deterministically reproducible) ───────
+cv/features/
+
 # Old survey folder (replaced by survey/)
 core-usage/
