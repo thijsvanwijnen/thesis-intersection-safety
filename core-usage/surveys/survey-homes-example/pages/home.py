@@ -1,0 +1,79 @@
+import dash
+from dash import dcc, html, callback, Input, Output
+import dash_bootstrap_components as dbc
+
+# Register this page
+dash.register_page(__name__, path='/', name='Home')
+
+# Page layout
+def layout():
+    return html.Div([
+        # Main content container - centered and 80% width
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([
+                    # Welcome card
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Markdown(
+                                """## Welcome to the Home Preferences Study! 🏠🏡🏢
+
+### About This Research
+We are conducting a comprehensive study to understand consumer preferences for residential properties. Your participation will help us better understand:
+
+- Housing purchasing decisions
+- Preference patterns across different demographics
+- Factors that influence real estate choices
+
+### What to Expect
+This study will take approximately **15-20 minutes** and consists of:
+- Brief screening questions
+- Interactive preference tasks
+- Questions about your housing preferences and habits
+
+### Compensation
+Participants will receive **$5** upon completion.
+
+Your responses are completely **anonymous** and will only be used for research purposes.
+""",
+                                style={
+                                    "fontSize": "16px",
+                                    "lineHeight": "1.6",
+                                    "color": "#333",
+                                    "textAlign": "justify"
+                                }
+                            )
+                        ], style={"padding": "2rem"})
+                    ], style={
+                        "boxShadow": "0 4px 8px rgba(0,0,0,0.1)",
+                        "borderRadius": "12px",
+                        "border": "none",
+                        "marginTop": "2rem",
+                        "marginBottom": "2rem"
+                    }),
+                    
+                    # Begin button - centered below the card
+                    html.Div([
+                        dbc.Button(
+                            "Start Survey",
+                            id="home-button",
+                            color="primary",
+                            size="lg",
+                            href="/consent#top",
+                            style={
+                                "fontSize": "18px",
+                                "fontWeight": "bold",
+                                "padding": "12px 40px",
+                                "borderRadius": "8px",
+                                "boxShadow": "0 2px 4px rgba(0,0,0,0.2)"
+                            }
+                        )
+                    ], style={
+                        "textAlign": "center",
+                        "marginBottom": "3rem"
+                    })
+                    
+                ], width={"size": 10, "offset": 1})  # 80% width (10/12) with 1 column offset on each side
+            ])
+        ], fluid=True, style={"minHeight": "80vh", "backgroundColor": "#f8f9fa"})  # Light gray background
+    ])

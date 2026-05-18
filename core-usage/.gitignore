@@ -4,6 +4,7 @@
 
 # ── VS Code ───────────────────────────────────────────────────────────────────
 .vscode/
+.idea/
 
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
@@ -16,6 +17,7 @@ __pycache__/
 dist/
 build/
 .env
+.psenv
 .venv
 env/
 venv/
@@ -28,6 +30,12 @@ venv/
 .DS_Store
 Thumbs.db
 desktop.ini
+*.swp
+*.swo
+
+# ── SQLite databases and environment secrets ──────────────────────────────────
+*.db
+!surveys/survey-intersection-safety/database.db
 
 # ── intersections: large raw data files ──────────────────────────────────────
 # Keep: rotterdam_ring.geojson, vri_locaties.gpkg (small reference files)
@@ -46,9 +54,11 @@ intersections/output/
 intersections/cache/
 intersections/notebooks/cache/
 
-# ── cv: cached feature tensors (large, deterministically reproducible) ───────
-cv/features/
+# Old survey folder (replaced by survey/)
+core-usage/
 
-# ── core-usage (survey framework): selectively ignore large/generated files ───
-core-usage/Paper.pdf
-core-usage/pixelsurvey-core/
+# ── Research folders moved to Project/ root ──────────────────────────────────
+bradley_terry/
+cv/
+intersections/
+survey/
