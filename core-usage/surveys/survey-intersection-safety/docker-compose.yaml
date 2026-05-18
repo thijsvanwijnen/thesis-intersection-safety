@@ -12,6 +12,7 @@ services:
       - "443:443"
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
+      - /home/gvanwijnen/survey-intersection-safety/database.db:/wd/database.db
       # Mount the images directory at runtime if needed
       # - /data/images:/wd/assets/images
     networks:
