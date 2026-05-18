@@ -8,8 +8,16 @@ class Database:
         """Initialize database connection."""
         self.path = path
         self.date_user_id = date_user_id
+        self._ensure_finished_column()
 
-    
+    def _ensure_finished_column(self):
+        """Add the 'finished' column to Task_set if it doesn't exist yet."""
+        existing = self._read("PRAGMA table_info(Task_set)")
+        column_names = [row[1] for row in existing]
+        if 'finished' not in column_names:
+            self._write("ALTER TABLE Task_set ADD COLUMN finished INTEGER DEFAULT 0")
+
+
     def _write(self, query:str):
         """Write a query to database."""
         for _ in range(10):
@@ -87,9 +95,24 @@ class Database:
     
 
     def _get_next_task_set_id(self):
-        """Get the next available task set id."""
-        query = "SELECT MIN(set_id) FROM Task_set WHERE used = 0"
-        return self._read(query)[0][0]
+        """Get the next available task set id using 3-priority fallback.
+        Priority 1: a set never started (used=0)
+        Priority 2: a set started but abandoned (used=1, finished=0)
+        Priority 3: all sets finished — pick a random one to keep collecting data
+        """
+        # Priority 1: never started
+        result = self._read("SELECT MIN(set_id) FROM Task_set WHERE used = 0")[0][0]
+        if result is not None:
+            return result
+
+        # Priority 2: started but not finished (someone dropped out)
+        result = self._read("SELECT MIN(set_id) FROM Task_set WHERE used = 1 AND finished = 0")[0][0]
+        if result is not None:
+            return result
+
+        # Priority 3: all sets finished — pick randomly
+        all_sets = self._read("SELECT set_id FROM Task_set")
+        return all_sets[randint(0, len(all_sets) - 1)][0]
     
 
     def create_new_respondent(self, unix_time:float):
