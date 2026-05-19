@@ -1,0 +1,124 @@
+import dash
+from dash import dcc, html, callback, Input, Output, State
+import dash_bootstrap_components as dbc
+import time
+from database import Database
+
+# Database
+db = Database('database.db')
+
+# Register this page
+dash.register_page(__name__, path="/$activity_key$", name='Questionnaire')
+
+# Page layout
+def layout():
+    return html.Div([
+
+        # Main content container - centered and 80% width
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([
+                    # Progress indicator
+                    html.Div([
+                        dbc.Progress(
+                            value=$questionnaire_prev_progress$,
+                            label="$questionnaire_prev_progress$%",
+                            style={"height": "15px", "fontSize": "10px"},
+                            color="primary"
+                        )
+                    ], style={"marginBottom": "2rem", "marginTop": "0.5rem"}),
+
+                    # Instructions card
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Markdown(
+                                """$questionnaire_content$""",
+                                style={
+                                    "fontSize": "16px",
+                                    "lineHeight": "1.6",
+                                    "color": "#333",
+                                    "textAlign": "justify"
+                                }
+                            )
+                        ], style={"padding": "2rem"})
+                    ], style={
+                        "boxShadow": "0 4px 8px rgba(0,0,0,0.1)",
+                        "borderRadius": "12px",
+                        "border": "none",
+                        "marginTop": "2rem",
+                        "marginBottom": "2rem"
+                    }),
+                    
+                    # List of Questionnaire questions
+                    html.Div([
+                        $questionnaire_questions$
+                    ], style={"marginBottom": "2rem"}),
+
+                    # Navigation buttons
+                    html.Div([
+                        dbc.Button(
+                            "Continue",
+                            id="$questionnaire_button_id$",
+                            color="primary",
+                            size="lg",
+                            disabled=True,
+                            style={
+                                "fontSize": "18px",
+                                "fontWeight": "bold",
+                                "padding": "12px 40px",
+                                "borderRadius": "8px",
+                                "boxShadow": "0 2px 4px rgba(0,0,0,0.2)"
+                            }
+                        )
+                    ], style={
+                        "textAlign": "center",
+                        "marginBottom": "3rem"
+                    })
+                    
+                ], width={"size": 10, "offset": 1})  # 80% width (10/12) with 1 column offset on each side
+            ])
+        ], fluid=True, style={"minHeight": "80vh", "backgroundColor": "#f8f9fa"})  # Light gray background
+    ])
+
+
+# Callback to enable/disable continue button based on all questionnaire questions being answered
+@callback(
+    [Output('$questionnaire_button_id$', 'disabled'),
+     Output('$questionnaire_button_id$', 'href')],
+     State('hrefs-store', 'data'),
+    [Input(f'question-{i}', 'value') for i in range(1, $num_questionnaire_questions$ + 1)],
+    prevent_initial_call=True
+)
+def toggle_continue_button(hrefs, *question_values):
+    # Check if all questions have been answered (not None and not empty)
+    all_answered = all(val is not None and val != "" for val in question_values)
+    is_disabled = not all_answered
+    next = hrefs['next']['/$activity_key$']
+    href = f"{next}#top" if all_answered else None
+    return is_disabled, href
+
+
+# Callback to handle questionnaire button click - register responses and time
+@callback(
+    Output('$questionnaire_button_id$', 'n_clicks'),
+    Input('$questionnaire_button_id$', 'n_clicks'),
+    [State('hrefs-store', 'data'),
+     State('user-store', 'data')] + [State(f'question-{i}', 'value') for i in range(1, $num_questionnaire_questions$ + 1)],
+    prevent_initial_call=True
+)
+def handle_questionnaire_click(n_clicks, hrefs, user_data, *question_values):
+    if n_clicks and user_data:
+        responses_dict = {f'$activity_key$_q{i+1}': value for i, value in enumerate(question_values)}
+        
+        # Register responses and time in database
+        db.register_questionnaire_responses(user_data['id'], '$activity_key$', responses_dict)
+        db.register_time(user_data['id'], '$questionnaire_button_id$', time.time())
+
+        if hrefs['next']['/$activity_key$'] == '/end':
+            db.update_quota(user_data['id'])
+    
+    return n_clicks
+
+
+# Question-specific callbacks
+$questionnaire_callbacks$

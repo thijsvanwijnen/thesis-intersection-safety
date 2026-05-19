@@ -1,0 +1,119 @@
+import dash
+from dash import dcc, html, callback, Input, Output
+import dash_bootstrap_components as dbc
+import time
+from database import Database
+
+# Database
+db = Database('database.db')
+
+# Register this page
+dash.register_page(__name__, path='/consent', name='Consent')
+
+# Page layout
+def layout():
+    return html.Div([
+        
+        # Main content container - centered and 80% width
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([
+                    # Consent card
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Markdown(
+                                """$consent_content$""",
+                                style={
+                                    "fontSize": "16px",
+                                    "lineHeight": "1.6",
+                                    "color": "#333",
+                                    "textAlign": "justify"
+                                }
+                            )
+                        ], style={"padding": "2rem"})
+                    ], style={
+                        "boxShadow": "0 4px 8px rgba(0,0,0,0.1)",
+                        "borderRadius": "12px",
+                        "border": "none",
+                        "marginTop": "2rem",
+                        "marginBottom": "2rem"
+                    }),
+                    
+                    # Consent checkbox - inline with text
+                    html.Div([
+                        dbc.Checklist(
+                            id="consent-checkbox",
+                            options=[
+                                {"label": "$consent_statement$", "value": "agree"}
+                            ],
+                            value=[],
+                            inline=True,
+                            style={
+                                "fontSize": "16px",
+                                "fontWeight": "500"
+                            }
+                        )
+                    ], style={
+                        "textAlign": "center",
+                        "marginBottom": "1.5rem"
+                    }),
+                    
+                    # Continue button - disabled by default
+                    html.Div([
+                        dbc.Button(
+                            "Continue",
+                            id="$consent_button_id$",
+                            color="primary",
+                            size="lg",
+                            disabled=True,
+                            style={
+                                "fontSize": "18px",
+                                "fontWeight": "bold",
+                                "padding": "12px 40px",
+                                "borderRadius": "8px",
+                                "boxShadow": "0 2px 4px rgba(0,0,0,0.2)"
+                            }
+                        )
+                    ], style={
+                        "textAlign": "center",
+                        "marginBottom": "3rem"
+                    })
+                    
+                ], width={"size": 10, "offset": 1})  # 80% width (10/12) with 1 column offset on each side
+            ])
+        ], fluid=True, style={"minHeight": "80vh", "backgroundColor": "#f8f9fa"})  # Light gray background
+    ])
+
+
+# Callback to enable/disable continue button and set href based on checkbox
+@callback(
+    [Output('$consent_button_id$', 'disabled'),
+     Output('$consent_button_id$', 'href')],
+    Input('consent-checkbox', 'value')
+)
+def toggle_continue_button(checkbox_value):
+    is_disabled = "agree" not in (checkbox_value or [])
+    href = "/screening#top" if not is_disabled else None
+    return is_disabled, href
+
+
+# Callback to handle consent button click - create user and load tasks
+@callback(
+    Output('user-store', 'data'),
+    Output('hrefs-store', 'data'),
+    Input('$consent_button_id$', 'n_clicks'),
+    prevent_initial_call=True
+)
+def handle_consent_click(n_clicks):
+    if n_clicks:
+        # Create new user and get tasks
+        respondent_id = db.create_new_respondent(time.time())
+        tasks = db.get_data_for_respondent(respondent_id, $tasks_counts_dict$)
+        
+        # Store user data
+        user_data = {'id': respondent_id, 'tasks': tasks}
+        hrefs_data = {'next': $survey_hrefs$}
+
+        return user_data, hrefs_data
+    
+    return dash.no_update, dash.no_update

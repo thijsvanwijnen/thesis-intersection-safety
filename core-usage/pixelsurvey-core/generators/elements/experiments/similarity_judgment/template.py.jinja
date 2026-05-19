@@ -1,0 +1,184 @@
+{% extends "experiment_base.py.jinja" %}
+
+{% block task_content_generator %}
+{% set images_per_alternative = variable_names|length // 3 %}
+{% set max_width = 280 * images_per_alternative %}
+
+{% macro generate_alternative_card(alt_number) %}
+    dbc.Card(
+        id="act{{ act_order }}-alternative-{{ alt_number }}",
+        children=[
+            dbc.CardHeader(
+                html.H5(f"{{ instance }} #{{ alt_number }}", className="card-title", style={"margin": 0})
+            ),
+            dbc.CardBody([
+                dbc.Row([
+                    {% set start_idx = (alt_number - 1) * images_per_alternative %}
+                    {% set end_idx = start_idx + images_per_alternative %}
+                    {% for image_var in variable_names[start_idx:end_idx] %}
+                    dbc.Col(
+                        dbc.CardImg(
+                            src=f"{{ '{' }}{{ image_var }}{{ '}' }}", 
+                            style={"height": "180px",   
+                                   "width": "100%",      
+                                   "objectFit": "contain"}
+                        ),
+                        width={"size": {{ 12 // images_per_alternative }}}
+                    ){{ "," if not loop.last else "" }}
+                    {% endfor %}
+                ], className="g-1")  # Add small gutters between images
+            ], style={"padding": "0.5rem"})
+        ],
+        style={
+            "width": "{{ max_width }}px",
+            "margin": "0 auto 0.5rem"  # pequeño espacio debajo de cada alternativa
+        }
+    )
+{% endmacro %}
+
+def task_content_generator(data):
+    """Generate similarity judgment content for current task"""
+    
+    # Unpack the task data
+    {{ variable_names | join(', ') }} = data
+    
+    # Generate the alternative cards
+    card_alternative_1 = {{ generate_alternative_card(1) | trim | indent(4) }}
+    
+    card_alternative_2 = {{ generate_alternative_card(2) | trim | indent(4) }}
+    
+    card_alternative_3 = {{ generate_alternative_card(3) | trim | indent(4) }}
+    
+    # Return the main experiment card
+    return lambda current_task: dbc.Card([
+        dbc.CardBody([
+            # Question text with circular task indicator
+            dbc.Row([
+                dbc.Col([
+                    html.Div([
+                        # Circular task number
+                        html.Div(
+                            f"Task {current_task}",
+                            style={
+                                "backgroundColor": "#007bff",
+                                "color": "white",
+                                "borderRadius": "20px",
+                                "minWidth": "60px",
+                                "height": "40px",
+                                "padding": "0 12px",
+                                "display": "flex",
+                                "alignItems": "center",
+                                "justifyContent": "center",
+                                "fontWeight": "bold",
+                                "fontSize": "14px",
+                                "marginRight": "15px",
+                                "whiteSpace": "nowrap"
+                            }
+                        ),
+                        # Question text
+                        html.Span(
+                            "Which is the most different one compared to the other two?",
+                            style={
+                                "fontWeight": "bold",
+                                "color": "darkblue",
+                                "fontSize": "22px",
+                                "lineHeight": "40px"
+                            }
+                        )
+                    ], style={
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                        "marginBottom": "2rem"
+                    })
+                ])
+            ]),
+            
+            # Alternative cards displayed vertically with RadioItems
+            html.Div([
+                dbc.RadioItems(
+                    id="similarity-judgment-{{ act_order }}-response",
+                    inline=False,
+                    input_style={"borderColor": "#000000"},
+                    options=[
+                        {"label": card_alternative_1, "value": 1},
+                        {"label": card_alternative_2, "value": 2},
+                        {"label": card_alternative_3, "value": 3}
+                    ]
+                )
+            ], style={
+                "textAlign": "center",
+                "marginBottom": "2rem"
+            })
+        ], style={"padding": "1.5rem"})
+    ], style={
+        "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+        "borderRadius": "8px", 
+        "border": "none",
+        "marginBottom": "1.5rem"
+    })
+{% endblock %}
+
+{% block selection_toggle_callback %}
+@callback(
+    Output("act{{ act_order }}-alternative-1", "color"),
+    Output("act{{ act_order }}-alternative-2", "color"),
+    Output("act{{ act_order }}-alternative-3", "color"),
+    Output("last_task_resp_act{{ act_order }}", "data"),
+    State("url", "pathname"),
+    State("last_task_resp_act{{ act_order }}", "data"),
+    Input("similarity-judgment-{{ act_order }}-response", "value"),
+    prevent_initial_call=True
+)
+def selection_made(pathname, last_task, selection):
+    color = "#a3ebff"
+    task_nr = pathname.split('/')[-1]
+    
+    if selection is None:
+        return None, None, None, last_task
+    elif selection == 1:
+        return color, None, None, {"task": task_nr}
+    elif selection == 2:
+        return None, color, None, {"task": task_nr}
+    elif selection == 3:
+        return None, None, color, {"task": task_nr}
+{% endblock %}
+
+{% block enable_button_callback %}
+@callback(
+    [Output('{{ experiment_button_id }}', 'disabled'),
+     Output('{{ experiment_button_id }}', 'href')],
+     State('hrefs-store', 'data'),
+     State('url', 'pathname'),
+    [Input('similarity-judgment-{{ act_order }}-response', 'value')],
+    prevent_initial_call=True
+)
+def toggle_continue_button(hrefs, pathname, selection):
+    # Check if all questions have been answered (not None and not empty)
+    is_disabled = selection is None
+    next = hrefs["next"][pathname]
+    href = f"{next}#top" if not is_disabled else None
+    return is_disabled, href
+{% endblock %}
+
+{% block click_callback %}
+@callback(
+    Output('{{ experiment_button_id }}', 'n_clicks'),
+    Input('{{ experiment_button_id }}', 'n_clicks'),
+    State('hrefs-store', 'data'),
+    State('user-store', 'data'),
+    State("last_task_resp_act{{ act_order }}", "data"),
+    State('similarity-judgment-{{ act_order }}-response', 'value'),
+    prevent_initial_call=True
+)
+def handle_screening_click(n_clicks, hrefs, user_data, last_task, response):
+    if n_clicks and user_data:
+        # Register responses and time in database
+        task_nr = last_task["task"]
+        db.register_experiment_response(user_data['id'], 'act{{ act_order }}', int(task_nr), response)
+        db.register_time(user_data['id'], f'act{{ act_order }}-task-{task_nr}-button', time.time())
+
+        if hrefs['next'][f'/act{{ act_order }}/{task_nr}'] == '/end':
+            db.update_quota(user_data['id'])
+    return n_clicks
+{% endblock %}

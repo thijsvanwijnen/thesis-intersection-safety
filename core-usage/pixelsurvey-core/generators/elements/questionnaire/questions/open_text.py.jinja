@@ -1,0 +1,39 @@
+dbc.Card([
+    dbc.CardBody([
+        # Question text
+        dbc.Row([
+            dbc.Col([
+                dbc.Label(
+                    "{{ question_display }}",
+                    html_for="question-{{ question_id }}",
+                    style={
+                        "fontWeight": "bold",
+                        "color": "darkblue",
+                        "fontSize": "16px",
+                        "marginBottom": "1rem"
+                    }
+                )
+            ])
+        ]),
+        
+        # Answer textarea
+        dbc.Row([
+            dbc.Col([
+                dbc.Textarea(
+                    id="question-{{ question_id }}",
+                    placeholder="Please type your response here...",
+                    style={
+                        "fontSize": "14px",
+                        "minHeight": "100px"
+                    },
+                    required={{ required }}
+                )
+            ])
+        ])
+    ], style={"padding": "1.5rem"})
+], style={
+    "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+    "borderRadius": "8px", 
+    "border": "none",
+    "marginBottom": "1.5rem"
+})

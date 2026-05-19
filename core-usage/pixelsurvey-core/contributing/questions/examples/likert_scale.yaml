@@ -1,0 +1,12 @@
+# Add this to your survey.yaml under the questions section
+questions:
+  - id: 1
+    type: likert_scale
+    question: "Evaluate the comfort of these items (1=Low, 3=High)"
+    likert_scale: 3
+    evaluations:
+      - label: "sofa"
+      - label: "bed"
+      - label: "chair"
+    required: true
+    variable_name: furniture_comfort

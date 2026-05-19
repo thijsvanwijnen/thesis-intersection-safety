@@ -1,0 +1,29 @@
+FROM python:3.11-slim-bullseye
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    nano \
+    sqlite3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+RUN mkdir /wd
+WORKDIR /wd
+
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Copy application files
+COPY . ./
+
+# Note: database.db is usually generated locally, but we ensure it exists
+# if you have a custom creator script, you can uncomment the line below:
+# RUN if [ ! -f ./database.db ]; then python database.py; fi
+
+# Command to run the server with Gunicorn and HTTPS
+# Replace YOUR_DOMAIN with your actual domain name after running Certbot
+CMD ["gunicorn", "--workers=4", "--threads=1", "-b 0.0.0.0:443", "app:server", \
+     "--certfile=/etc/letsencrypt/live/{{ domain_name }}/fullchain.pem", \
+     "--keyfile=/etc/letsencrypt/live/{{ domain_name }}/privkey.pem", \
+     "--access-logfile", "-"]

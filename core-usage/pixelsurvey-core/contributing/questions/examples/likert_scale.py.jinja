@@ -1,0 +1,28 @@
+dbc.Card([
+    dbc.CardBody([
+        # 1. Hidden input for the final aggregated response (The Database reads this!)
+        dcc.Input(id="question-{{ question_id }}", style={"display": "none"}),
+        
+        # 2. The Question Label
+        dbc.Label("{{ question }}", style={"fontWeight": "bold"}),
+        
+        # 3. The Interactive Table
+        dbc.Table([
+            html.Tbody([
+                {% for item in evaluations %}
+                html.Tr([
+                    html.Td("{{ item.label }}"),
+                    html.Td([
+                        dbc.RadioItems(
+                            # Internal ID for this specific row: question-ID-Index
+                            id="question-{{ question_id }}-{{ loop.index0 }}",
+                            options=[{"label": str(i), "value": i} for i in range(1, {{ likert_scale }} + 1)],
+                            inline=True
+                        )
+                    ])
+                ])
+                {% endfor %}
+            ])
+        ])
+    ])
+])

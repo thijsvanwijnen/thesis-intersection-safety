@@ -1,0 +1,134 @@
+import dash
+from dash import dcc, html, callback, Input, Output, State
+import dash_bootstrap_components as dbc
+import time
+from database import Database
+
+
+# Database
+db = Database('database.db')
+
+
+# Register this page with dynamic path template
+dash.register_page(__name__, path_template="/$activity_key$/<task_number>", name='$experiment_name$')
+
+
+# Task content generator
+$task_content_generator$
+
+
+# Page layout
+def layout(task_number=None):
+    if task_number is None:
+        task_number = "1"
+    
+    current_task = int(task_number)
+    n_act_tasks = $n_act_tasks$
+    n_prev_tasks = $n_prev_tasks$
+    n_total_tasks = $n_total_tasks$
+
+    progress = ((n_prev_tasks+current_task)/n_total_tasks) * 100
+    if progress == 100:
+        progress == 99
+    progress_label = int(round(progress,0))
+    
+    return html.Div([
+        
+        # Main content container - centered and 80% width
+        dbc.Container([
+            dbc.Row([
+                dbc.Col([
+                    # Progress indicator
+                    html.Div([
+                        dbc.Progress(
+                            value= progress,
+                            label=f"{progress_label}%",
+                            style={"height": "15px", "fontSize": "10px"},
+                            color="primary"
+                        )
+                    ], style={"marginBottom": "2rem", "marginTop": "0.5rem"}),
+                    
+                    # Instructions card
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Markdown(
+                                """$experiment_instructions$""",
+                                style={
+                                    "fontSize": "16px",
+                                    "lineHeight": "1.6",
+                                    "color": "#333",
+                                    "textAlign": "justify"
+                                }
+                            )
+                        ], style={"padding": "2rem"})
+                    ], style={
+                        "boxShadow": "0 4px 8px rgba(0,0,0,0.1)",
+                        "borderRadius": "12px",
+                        "border": "none",
+                        "marginTop": "2rem",
+                        "marginBottom": "2rem"
+                    }),
+                    
+                    # Dynamic experiment content
+                    html.Div(None, id="task-content-$activity_key$", style={"marginBottom": "2rem"}),
+
+                    # Navigation buttons
+                    html.Div([
+                        dbc.Button(
+                            "Continue",
+                            id="$experiment_button_id$",
+                            color="primary",
+                            size="lg",
+                            disabled=True,
+                            style={
+                                "fontSize": "18px",
+                                "fontWeight": "bold",
+                                "padding": "12px 40px",
+                                "borderRadius": "8px",
+                                "boxShadow": "0 2px 4px rgba(0,0,0,0.2)"
+                            }
+                        )
+                    ], style={
+                        "textAlign": "center",
+                        "marginBottom": "3rem"
+                    })
+                    
+                ], width=12, style={"paddingLeft": "2rem", "paddingRight": "2rem"})  # Full width with small side padding
+            ])
+        ], fluid=True, style={"minHeight": "80vh", "backgroundColor": "#f8f9fa"})  # Light gray background
+    ])
+
+
+## Callback to load experiment content based on current task
+@callback(
+    Output('task-content-$activity_key$', 'children'),
+    [
+        Input('url', 'pathname'),
+        State('user-store', 'data')
+    ],
+)
+def load_task_content(pathname, user_data):
+    act_key = '$activity_key$'
+    task_nr = pathname.split('/')[-1]
+    if pathname.split('/')[-2] == '$activity_key$':
+        task_data = user_data['tasks'][f'{act_key}_task_{task_nr}']
+        return task_content_generator(task_data)(int(task_nr))
+    else:
+        return None
+
+
+## Callback to change visually the selection
+$selection_toggle_callback$
+
+
+## Callback to enable/disable continue button based on all screening questions being answered
+$enable_button_callback$
+
+
+## Callback to handle act button click - register response and time
+$click_callback$
+
+
+
+
+

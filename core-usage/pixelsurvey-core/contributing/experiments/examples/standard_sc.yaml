@@ -1,0 +1,24 @@
+# Add this to your survey.yaml under the body section
+activity_1:
+  order: 1
+  type: experiment
+  experiment_type: standard_stated_choice
+  persistent_instructions: |
+    ### Experiment: Stated Choice
+    You will see choice tasks and you should choose only one alternative
+    
+  task:
+    query: "Which trip option would you prefer for commuting?"
+    instance: "Trip"
+    n_alternatives: 3
+    attributes:
+      - label: "Mode"
+        type: standard
+        unit: ""
+      - label: "Price"
+        type: standard
+        unit: "€"
+  settings:
+    tasks_per_respondent: 8
+    experimental_design_mode: custom
+    custom_design: experiments/exp1/sc_custom_design.csv

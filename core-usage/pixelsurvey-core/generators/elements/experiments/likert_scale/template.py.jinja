@@ -1,0 +1,198 @@
+{% extends "experiment_base.py.jinja" %}
+
+{% block task_content_generator %}
+def task_content_generator(data):
+    """Generate likert scale content for current task"""
+    
+    # Unpack the task data - for LS, data is a single-element list
+    {{ variable_names[0] }} = data[0]
+    
+    # Return the main experiment card
+    return lambda current_task: dbc.Card([
+        dbc.CardBody([
+            # Question text with circular task indicator
+            dbc.Row([
+                dbc.Col([
+                    html.Div([
+                        # Circular task number
+                        html.Div(
+                            f"Task {current_task}",
+                            style={
+                                "backgroundColor": "#007bff",
+                                "color": "white",
+                                "borderRadius": "20px",
+                                "minWidth": "60px",
+                                "height": "40px",
+                                "padding": "0 12px",
+                                "display": "flex",
+                                "alignItems": "center",
+                                "justifyContent": "center",
+                                "fontWeight": "bold",
+                                "fontSize": "14px",
+                                "marginRight": "15px",
+                                "whiteSpace": "nowrap"
+                            }
+                        ),
+                        # Question text
+                        html.Span(
+                            "{{ task_query }}",
+                            style={
+                                "fontWeight": "bold",
+                                "color": "darkblue",
+                                "fontSize": "22px",
+                                "lineHeight": "40px"
+                            }
+                        )
+                    ], style={
+                        "display": "flex",
+                        "alignItems": "center",
+                        "justifyContent": "center",
+                        "marginBottom": "2rem"
+                    })
+                ])
+            ]),
+            
+            # Instance card with image
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader(
+                            html.H4(f"{{ instance }}", className="card-title")
+                        ),
+                        dbc.CardImg(src=f"{{ '{' }}{{ variable_names[0] }}{{ '}' }}", top=True)
+                    ], style={
+                        "width": "100%",
+                        "maxWidth": "400px",
+                        "margin": "0 auto"
+                    })
+                ])
+            ], style={"marginBottom": "2rem"}),
+            
+            # Likert scale table
+            dbc.Row([
+                dbc.Col([
+                    dbc.Table([
+                        html.Thead([
+                            html.Tr([
+                                html.Th(
+                                    "?", 
+                                    style={
+                                        "width": "200px",
+                                        "backgroundColor": "black",
+                                        "color": "white",
+                                        "textAlign": "center",
+                                        "fontWeight": "bold",
+                                        "fontSize": "18px"
+                                    }
+                                ),
+                                html.Th(
+                                    html.Div([
+                                        html.Span("Low", style={"float": "left", "fontWeight": "bold"}),
+                                        html.Span("High", style={"float": "right", "fontWeight": "bold"})
+                                    ], style={"width": "100%", "position": "relative"}),
+                                    colSpan={{ likert_scale }},
+                                    style={
+                                        "textAlign": "center",
+                                        "backgroundColor": "#007bff",
+                                        "color": "white",
+                                        "fontWeight": "bold",
+                                        "padding": "1rem"
+                                    }
+                                )
+                            ])
+                        ], style={"backgroundColor": "#007bff"}),
+                        html.Tbody([
+                            {% for i, evaluation in enumerate(evaluations) %}
+                            html.Tr([
+                                html.Td(
+                                    "{{ evaluation.label }}",
+                                    style={"fontWeight": "bold", "padding": "1rem", "verticalAlign": "middle", "fontSize": "18px"}
+                                ),
+                                html.Td([
+                                    dbc.RadioItems(
+                                        id="likert-{{ act_order }}-evaluation-{{ i+1 }}",
+                                        options=[
+                                            {% for j in range(1, likert_scale + 1) %}
+                                            {"label": "{{ j }}", "value": {{ j }}}{{ "," if not loop.last else "" }}
+                                            {% endfor %}
+                                        ],
+                                        value=None,
+                                        inline=True,
+                                        style={
+                                            "display": "flex",
+                                            "justifyContent": "space-around",
+                                            "padding": "0.5rem"
+                                        },
+                                        input_style={"marginRight": "5px"}
+                                    )
+                                ], style={"padding": "1rem"}, colSpan={{ likert_scale }})
+                            ]){{ "," if not loop.last else "" }}
+                            {% endfor %}
+                        ])
+                    ], bordered=True, hover=True, style={"fontSize": "14px", "borderRadius": "8px", "overflow": "hidden"})
+                ])
+            ])
+        ], style={"padding": "1.5rem"})
+    ], style={
+        "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+        "borderRadius": "8px", 
+        "border": "none",
+        "marginBottom": "1.5rem"
+    })
+{% endblock %}
+
+{% block selection_toggle_callback %}
+@callback(
+    Output("last_task_resp_act{{ act_order }}", "data"),
+    State("url", "pathname"),
+    State("last_task_resp_act{{ act_order }}", "data"),
+    [{% for i in range(evaluations|length) %}Input("likert-{{ act_order }}-evaluation-{{ i+1 }}", "value"){{ ", " if not loop.last else "" }}{% endfor %}],
+    prevent_initial_call=True
+)
+def selection_made(pathname, last_task, *slider_values):
+    task_nr = pathname.split('/')[-1]
+    return {"task": task_nr}
+{% endblock %}
+
+{% block enable_button_callback %}
+@callback(
+    [Output('{{ experiment_button_id }}', 'disabled'),
+     Output('{{ experiment_button_id }}', 'href')],
+     State('hrefs-store', 'data'),
+     State('url', 'pathname'),
+    [{% for i in range(evaluations|length) %}Input("likert-{{ act_order }}-evaluation-{{ i+1 }}", "value"){{ ", " if not loop.last else "" }}{% endfor %}],
+    prevent_initial_call=True
+)
+def toggle_continue_button(hrefs, pathname, *slider_values):
+    # Check if all sliders have been answered (not None)
+    all_answered = all(val is not None for val in slider_values)
+    is_disabled = not all_answered
+    next = hrefs["next"][pathname]
+    href = f"{next}#top" if all_answered else None
+    return is_disabled, href
+{% endblock %}
+
+{% block click_callback %}
+@callback(
+    Output('{{ experiment_button_id }}', 'n_clicks'),
+    Input('{{ experiment_button_id }}', 'n_clicks'),
+    State('hrefs-store', 'data'),
+    State('user-store', 'data'),
+    State("last_task_resp_act{{ act_order }}", "data"),
+    [{% for i in range(evaluations|length) %}State("likert-{{ act_order }}-evaluation-{{ i+1 }}", "value"){{ ", " if not loop.last else "" }}{% endfor %}],
+    prevent_initial_call=True
+)
+def handle_screening_click(n_clicks, hrefs, user_data, last_task, *slider_values):
+    if n_clicks and user_data:
+        # Concatenate responses in order (e.g., 1,2,3 -> "1/2/3")
+        response = '/'.join([str(val) for val in slider_values])
+        
+        # Register responses and time in database
+        task_nr = last_task["task"]
+        db.register_experiment_response(user_data['id'], 'act{{ act_order }}', int(task_nr), response)
+        db.register_time(user_data['id'], f'act{{ act_order }}-task-{task_nr}-button', time.time())
+
+        if hrefs['next'][f'/act{{ act_order }}/{task_nr}'] == '/end':
+            db.update_quota(user_data['id'])
+    return n_clicks
+{% endblock %}

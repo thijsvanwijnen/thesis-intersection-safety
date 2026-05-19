@@ -1,0 +1,41 @@
+dbc.Card([
+    dbc.CardBody([
+        # Question text
+        dbc.Row([
+            dbc.Col([
+                dbc.Label(
+                    "{{ question_display }}",
+                    html_for="question-{{ question_id }}",
+                    style={
+                        "fontWeight": "bold",
+                        "color": "darkblue",
+                        "fontSize": "16px",
+                        "marginBottom": "1rem"
+                    }
+                )
+            ])
+        ]),
+        
+        # Answer options (dropdown)
+        dbc.Row([
+            dbc.Col([
+                dcc.Dropdown(
+                    id="question-{{ question_id }}",
+                    placeholder="Please select an option...",
+                    options=[
+                        {% for alt in alternatives %}
+                        {"label": "{{ alt }}", "value": "{{ loop.index }}"}{{ "," if not loop.last else "" }}
+                        {% endfor %}
+                    ],
+                    style={"fontSize": "14px"},
+                  # required={{ required }}
+                )
+            ])
+        ])
+    ], style={"padding": "1.5rem"})
+], style={
+    "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+    "borderRadius": "8px", 
+    "border": "none",
+    "marginBottom": "1.5rem"
+})
