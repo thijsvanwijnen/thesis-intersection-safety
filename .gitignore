@@ -49,6 +49,3 @@ intersections/notebooks/cache/
 # ── cv: cached feature tensors (large, deterministically reproducible) ───────
 cv/features/
 
-# ── core-usage (survey framework): selectively ignore large/generated files ───
-core-usage/Paper.pdf
-core-usage/pixelsurvey-core/
