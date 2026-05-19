@@ -205,6 +205,12 @@ class Database:
         return quota[0][0] > 0
 
 
+    def mark_set_finished(self, respondent_id: int):
+        """Mark the task set of a respondent as finished, enabling Priority 3 fallback for future respondents."""
+        query = "UPDATE Task_set SET finished = 1 WHERE set_id = (SELECT set_id FROM Response WHERE respondent_id = ?)"
+        self._write_human_inputs(query, (respondent_id,))
+
+
     def update_quota(self, respondent_id):
         """Register one extra response for the screening questions set in Quotas"""
 

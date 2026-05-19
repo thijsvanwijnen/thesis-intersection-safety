@@ -328,6 +328,10 @@ def handle_screening_click(n_clicks, hrefs, user_data, last_task, response):
         db.register_experiment_response(user_data['id'], 'act1', int(task_nr), response)
         db.register_time(user_data['id'], f'act1-task-{task_nr}-button', time.time())
 
-        if hrefs['next'][f'/act1/{task_nr}'] == '/end':
+        # If this was the last act1 task (next page is not another task in this activity),
+        # mark the task set as finished and update the quota
+        next_href = hrefs['next'][f'/act1/{task_nr}']
+        if not next_href.startswith('/act1/'):
+            db.mark_set_finished(user_data['id'])
             db.update_quota(user_data['id'])
     return n_clicks
